@@ -1,0 +1,83 @@
+# Product
+
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
+## Stack
+
+TypeScript on Node.js. One Hono server runs the background jobs and serves a React single-page app built with Vite. SQLite database, optionally backed up every few minutes to a folder or an S3-compatible bucket. Live torrent status reaches the browser through server-sent events. Decided in Linear: Choose the technology.
+
+Component library: shadcn/ui on Base UI, with TanStack Table (Choose the design library). Add TanStack Virtual when a list needs it. The decision and supporting evidence are in `docs/design/design-library-requirements.md`.
+
+## Users
+
+One user in the first version: the owner, a power user who runs Sonarr, Radarr, rTorrent and Plex on a Whatbox seedbox and downloads from private trackers. Mostly at a desktop browser searching, picking releases and managing files; on a phone to check status and make quick grabs, for example while travelling.
+
+Friends who request movies and TV shows are a planned later audience (v2), not a first-version user.
+
+## Product Purpose
+
+media-manager-2 brings media discovery, downloading and management into one app. It puts Sonarr and Radarr behind one interface and makes them behave the way the owner expects. It lets the owner discover and search movies and TV shows, pick the exact release, and choose to replace the tracked version or keep a second version. It watches every download live from rTorrent and fixes searches that never ran and torrents that stalled, on its own.
+
+Success: the owner trusts that what they asked for will arrive, at the quality they picked, without babysitting Sonarr, Radarr or rTorrent, and without ever getting a hit and run.
+
+## Positioning
+
+Sonarr and Radarr only see rTorrent through a slow, vague summary, never retry a stalled torrent, never search for missing items on a timer, and track one file per movie or episode. media-manager-2 reads rTorrent directly, knows each private tracker's hit and run rules, honours the owner's hand-picked choices over automatic upgrades, and manages extra versions alongside the ones Sonarr and Radarr track.
+
+## Operating Context
+
+- Runs on the same Whatbox machine as rTorrent and the library folder, reached at the owner's own domain through Cloudflare. Plex sign-in, limited to the owner's account.
+- Talks to Sonarr, Radarr, rTorrent, Plex and three private trackers (Beyond-HD, PrivateHD, Blutopia).
+- Torrents must keep seeding to satisfy each tracker's hit and run rules; files reach the library folder as hardlinks.
+- The v1 tool is retired; its code is a source to copy from, not a reference for this product's design.
+
+## Capabilities and Constraints
+
+First version, as agreed on the Linear map (Map: first version of media-manager-2):
+
+1. Search movies and TV shows, routed to Radarr or Sonarr.
+2. List releases and grab one by hand; for something already in the library, choose replace or second version.
+3. A replace always goes through, even when not an upgrade. Replaced items are labelled "manual download" and must not be upgraded over.
+4. Second versions are grabbed, imported, tracked and deleted by media-manager-2.
+5. On delete, ask whether to also remove the torrent, recommending an answer from the tracker's hit and run rules.
+6. Live torrent status from rTorrent.
+7. Automatic fixes for missed searches, stalled torrents, tracker problems and blocked imports; anything it gives up on is flagged.
+8. Health checks for Sonarr, Radarr, rTorrent, Plex, each tracker account and its own housekeeping.
+9. A view-only calendar of upcoming monitored episodes and movies.
+10. Flags and warnings appear in the app only: a flagged page, a history on each movie and episode, and a global activity log.
+11. The app opens on the library, with search one action away from every screen.
+12. One search box finds library matches first, then Sonarr and Radarr lookup results. Results carry enough to tell titles apart before opening one: poster, title, year, TV or movie, network or studio, continuing or ended, rating, a one-line overview, and whether it is already in the library. All of it comes from the Sonarr and Radarr lookup.
+13. A title not yet added opens on the same overview as an owned one: large poster, description, rating, status, and every season with whether it has fully aired, is airing or is upcoming, with episode counts.
+14. Adding a title is the monitor decision, made in one dialog that reads as a sentence. For a show: monitor all episodes, future episodes, the newest season, specific seasons or no episodes, with the quality profile; root folder, series type, season folders and monitoring of new seasons sit under More options. For a movie: movie only, entire collection or nothing, the minimum availability (announced, in cinemas, available) and the quality profile, with the root folder under More options. The sentence shows what the choice covers: how many aired episodes will be searched for, when the next episode airs, or how many films a collection holds. Confirming adds the title and starts the automatic search for everything monitored that has aired, and the same page becomes the title's overview with that search's progress per season and episode.
+15. Monitored state is visible on every show, season and episode row, with a mixed state for a season that is partly monitored, and can be toggled on the row.
+16. Episode and movie rows carry Search automatically and Pick a release directly. Versions and history open on request; nothing in the grab path needs a side panel.
+
+Images and descriptions come only from Sonarr and Radarr: one poster and one backdrop per title, plus season posters and episode images. The one exception is TMDB, which may supply them for Discover and title pages.
+
+Terminology: use the words in `CONTEXT.md` exactly. "Release" always means a torrent, never a release date.
+
+Out of the first version: friend requests, playback statistics, deletion score, scheduled deletion, storage forecasting, calendar actions, phone notifications, and configuration for other people's setups.
+
+## Brand Commitments
+
+Name: media-manager-2. No logo or other brand assets exist yet.
+
+## Evidence on Hand
+
+None. There are no screenshots, users, testimonials or data to show; future work must not invent any.
+
+## Product Principles
+
+1. The owner's choice wins. A hand-picked release or replace is carried out, and automation never quietly undoes it.
+2. Never risk a hit and run. When in doubt, keep seeding.
+3. Show the real state, live. Status comes from rTorrent itself, not a stale summary.
+4. Fix it, then tell. Automation handles routine failures on its own and records what it did; only what it can't fix asks for attention.
+5. Power over hand-holding. Dense, precise information for someone who knows Sonarr, Radarr and torrents.
+
+## Accessibility & Inclusion
+
+Keyboard shortcuts are a nice-to-have, not a requirement: common actions should have a key where it costs little. No other product-specific requirement.
